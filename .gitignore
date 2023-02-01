@@ -1,0 +1,9 @@
+node_modules
+.vscode
+tmp/*
+dist
+
+.env
+.editorconfig
+
+!tmp/.gitkeep

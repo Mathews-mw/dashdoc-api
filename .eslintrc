@@ -1,0 +1,25 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "eslint-plugin-import-helpers"],
+  "extends": ["plugin:@shopify/esnext", "plugin:@shopify/node", "plugin:@shopify/prettier"],
+  "rules": {
+    "prettier/prettier": ["error", {
+      "singleQuote": true,
+      "printWidth": 210,
+      "tabWidth": 2,
+      "useTabs": true,
+      "semi": true,
+      "jsxSingleQuote": true,
+      "trailingComma": "es5",
+      "bracketSpacing": true,
+      "arrowFunctionParens": "always",
+      "bracketLine": true
+    }]
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
+  }
+}
