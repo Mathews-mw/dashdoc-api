@@ -105,6 +105,26 @@ export class UsersRepository implements IUserRepository {
 		return user;
 	}
 
+	async findByEmail(email: string): Promise<Partial<Users>> {
+		const user = await prisma.users.findUniqueOrThrow({
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				phone_number: true,
+				cpf: true,
+				company: true,
+				created_at: true,
+				updated_at: true,
+			},
+			where: {
+				email,
+			},
+		});
+
+		return user;
+	}
+
 	async findByCpf(cpf: string): Promise<Partial<Users>> {
 		const user = await prisma.users.findUniqueOrThrow({
 			select: {

@@ -23,5 +23,6 @@ export interface IUserRepository {
 	delete(id: string): Promise<void>;
 	gettAllUsers(): Promise<Partial<Users>[]>;
 	findById(id: string): Promise<Partial<Users>>;
+	findByEmail(email: string): Promise<Partial<Users>>;
 	findByCpf(cpf: string): Promise<Partial<Users>>;
 }

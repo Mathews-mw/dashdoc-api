@@ -29,23 +29,27 @@ export class InMemoryUsersRepository implements IUserRepository {
 		return newUser;
 	}
 
-	update(data: IUpdateUserDTO): Promise<Users> {
+	async update(data: IUpdateUserDTO): Promise<Users> {
 		throw new Error('Method not implemented.');
 	}
 
-	delete(id: string): Promise<void> {
+	async delete(id: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 
-	gettAllUsers(): Promise<Partial<Users>[]> {
+	async gettAllUsers(): Promise<Partial<Users>[]> {
 		throw new Error('Method not implemented.');
 	}
 
-	findById(id: string): Promise<Partial<Users>> {
-		throw new Error('Method not implemented.');
+	async findById(id: string): Promise<Partial<Users>> {
+		return this.users.find((user) => user.id === id) as Users;
 	}
 
-	findByCpf(cpf: string): Promise<Partial<Users>> {
-		throw new Error('Method not implemented.');
+	async findByEmail(email: string): Promise<Partial<Users>> {
+		return this.users.find((user) => user.email === email) as Users;
+	}
+
+	async findByCpf(cpf: string): Promise<Partial<Users>> {
+		return this.users.find((user) => user.cpf === cpf) as Users;
 	}
 }

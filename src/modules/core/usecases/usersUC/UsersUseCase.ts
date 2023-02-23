@@ -8,6 +8,8 @@ import { UsersRepository } from '../../../repositories/UsersRepository';
 import { IUserRepository } from '../../../repositories/interfaces/IUserRepository';
 import { IUpdateUserDTO, IFindUniqueUser } from '../../../interfaces/IUserRepository';
 
+import { UsersUseCaseErrors } from './UsersUseCaseErrors';
+
 interface ICreateUserRequest {
 	name: string;
 	email: string;
@@ -22,17 +24,19 @@ export class UsersUseCase implements IUserRepository {
 		private usersRepository: IUserRepository // eslint-disable-next-line no-empty-function
 	) {}
 
+	findByEmail(email: string): Promise<Partial<Users>> {
+		throw new Error('Method not implemented.');
+	}
+
 	async create(data: ICreateUserRequest): Promise<Users> {
 		const { name, email, password, confirm_password } = data;
 
-		const userAlredyExists = await prisma.users.findUnique({
-			where: {
-				email,
-			},
-		});
+		const userAlredyExists = await this.usersRepository.findByEmail(email);
+
+		console.log('userAlredyExists use case: ', userAlredyExists);
 
 		if (userAlredyExists) {
-			throw new HandleErrors('Esse e-mail já está sendo usado.', 404);
+			throw new UsersUseCaseErrors.EmailAreadyInUse();
 		}
 
 		const hashPassword = await hash(password, 8);

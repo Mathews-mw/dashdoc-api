@@ -1,7 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import { UsersUseCase } from '../../modules/core/usecases/usersUC/UsersUseCase';
-import { HandleErrors } from '../../shared/errors/HandleErrors';
+import { UsersUseCaseErrors } from '../../modules/core/usecases/usersUC/UsersUseCaseErrors';
 import { InMemoryUsersRepository } from '../in-memory/InMemoryUsersRepository';
 
 let userUseCase: UsersUseCase;
@@ -13,33 +13,32 @@ describe('[Unit Test] Create users service', () => {
 		userUseCase = new UsersUseCase(inMemoryUsersRepository);
 	});
 
-	const newUser = {
-		id: uuidV4(),
-		name: 'Mathews Araujo',
-		email: 'mathews@email.exemplo.com',
-		password: 'math@123',
-		confirm_password: 'math@123',
-	};
-
 	it('Should be able to create a new user', async () => {
-		await expect(userUseCase.create(newUser)).resolves.not.toThrow();
+		const user = await userUseCase.create({
+			name: 'Bryan Nash',
+			email: 'ovaozazaw@mo.cl',
+			password: 'Gvd!SJ@ks7',
+			confirm_password: 'Gvd!SJ@ks7',
+		});
 
-		expect(inMemoryUsersRepository.users).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					name: 'Mathews Araujo',
-				}),
-			])
-		);
+		expect(user).toHaveProperty('id');
 	});
 
 	it('should NOT be able to crate new user with same email address', async () => {
-		await userUseCase.create(newUser);
+		await userUseCase.create({
+			name: 'Bryan Nash',
+			email: 'ovaozazaw@mo.cl',
+			password: 'Gvd!SJ@ks7',
+			confirm_password: 'Gvd!SJ@ks7',
+		});
 
-		expect(async () => {
-			await userUseCase.create(newUser);
-		}).rejects.toThrowError();
-
-		// expect(inMemoryUsersRepository.users).toEqual(expect.arrayContaining.length === 1);
+		await expect(
+			userUseCase.create({
+				name: 'Bryan Nash',
+				email: 'ovaozazaw@mo.cl',
+				password: 'Gvd!SJ@ks7',
+				confirm_password: 'Gvd!SJ@ks7',
+			})
+		).rejects.toEqual(new UsersUseCaseErrors.EmailAreadyInUse());
 	});
 });

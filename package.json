@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest -i --runInBand --detectOpenHandles",
+    "test": "jest -i --runInBand",
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "ts-node-dev --exit-child --inspect --transpile-only --ignore-watch node_modules --respawn src/server.ts",
     "lint": "eslint . --ext .ts",
