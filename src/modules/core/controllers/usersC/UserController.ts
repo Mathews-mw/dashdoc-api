@@ -61,7 +61,7 @@ export class UserController {
 		const { name, email, phone_number, cpf, bio, company } = createUserBody.parse(request.body);
 
 		try {
-			const useUserCase = new UsersUseCase();
+			const useUserCase = container.resolve(UsersUseCase);
 			const result = await useUserCase.update({
 				id,
 				name,
@@ -91,7 +91,7 @@ export class UserController {
 		}
 
 		try {
-			const usersUseCase = new UsersUseCase();
+			const usersUseCase = container.resolve(UsersUseCase);
 
 			await usersUseCase.delete(id);
 
@@ -104,7 +104,7 @@ export class UserController {
 
 	async handleIndex(request: Request, response: Response): Promise<Response> {
 		try {
-			const usersUseCase = new UsersUseCase();
+			const usersUseCase = container.resolve(UsersUseCase);
 			const users = await usersUseCase.gettAllUsers();
 
 			return response.json(users);
@@ -122,7 +122,7 @@ export class UserController {
 		}
 
 		try {
-			const usersUseCase = new UsersUseCase();
+			const usersUseCase = container.resolve(UsersUseCase);
 			const user = await usersUseCase.findById(id);
 
 			return response.json(user);

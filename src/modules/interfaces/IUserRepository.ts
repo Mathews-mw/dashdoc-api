@@ -1,7 +1,5 @@
 import { Users } from '@prisma/client';
 
-import { Context } from '../../shared/config/context';
-
 export interface ICreateUserDTO {
 	name: string;
 	email: string;
@@ -25,7 +23,7 @@ export interface IFindUniqueUser extends Partial<Users> {
 }
 
 export interface IUserRepository {
-	create(data: ICreateUserDTO, ctx: Context): Promise<Users>;
+	create(data: ICreateUserDTO): Promise<Users>;
 	update(data: IUpdateUserDTO): Promise<Users>;
 	delete(id: string): Promise<void>;
 	gettAllUsers(): Promise<Partial<Users>[]>;

@@ -1,12 +1,10 @@
-import { inject, injectable } from 'tsyringe';
-import { Users } from '@prisma/client';
 import { hash } from 'bcryptjs';
+import { inject, injectable } from 'tsyringe';
+import { Users, Permissions, Roles } from '@prisma/client';
 
 import { prisma } from '../../../../database/prismaClient';
-import { HandleErrors } from '../../../../shared/errors/HandleErrors';
 import { UsersRepository } from '../../../repositories/UsersRepository';
 import { IUserRepository } from '../../../repositories/interfaces/IUserRepository';
-import { IUpdateUserDTO, IFindUniqueUser } from '../../../interfaces/IUserRepository';
 
 import { UsersUseCaseErrors } from './UsersUseCaseErrors';
 
@@ -17,23 +15,40 @@ interface ICreateUserRequest {
 	confirm_password: string;
 }
 
+interface IUpdateUserRequest {
+	name?: string;
+	email?: string;
+	phone_number?: string;
+	cpf?: string;
+	bio?: string;
+	company?: string;
+}
+
+interface IUserResponse extends Partial<Users> {
+	permission?: string;
+	roles?: string[];
+}
+
+interface IUserDTO extends Users {
+	permissionsUsers: {
+		permission: Pick<Permissions, 'key'>;
+	};
+	rolesUsers: {
+		roles: Pick<Roles, 'key'>;
+	}[];
+}
+
 @injectable()
-export class UsersUseCase implements IUserRepository {
+export class UsersUseCase {
 	constructor(
 		@inject(UsersRepository)
 		private usersRepository: IUserRepository // eslint-disable-next-line no-empty-function
 	) {}
 
-	findByEmail(email: string): Promise<Partial<Users>> {
-		throw new Error('Method not implemented.');
-	}
-
 	async create(data: ICreateUserRequest): Promise<Users> {
 		const { name, email, password, confirm_password } = data;
 
 		const userAlredyExists = await this.usersRepository.findByEmail(email);
-
-		console.log('userAlredyExists use case: ', userAlredyExists);
 
 		if (userAlredyExists) {
 			throw new UsersUseCaseErrors.EmailAreadyInUse();
@@ -52,115 +67,92 @@ export class UsersUseCase implements IUserRepository {
 		return newUser;
 	}
 
-	async update(data: IUpdateUserDTO): Promise<Users> {
-		const { id, name, email, phone_number, cpf, bio, company } = data;
+	async update(user_id: string, data: IUpdateUserRequest): Promise<Users> {
+		const { name, email, phone_number, cpf, bio, company } = data;
 
-		const updateUser = await prisma.users
-			.update({
-				where: {
-					id,
-				},
-				data: {
-					name,
-					email,
-					phone_number,
-					cpf,
-					bio,
-					company,
-					updated_at: new Date(),
-				},
-			})
-			.catch((error) => {
-				return error;
-			});
+		const updatedUser = await this.usersRepository.update(user_id, {
+			name,
+			email,
+			phone_number,
+			cpf,
+			bio,
+			company,
+			updated_at: new Date(),
+		});
 
-		return updateUser;
+		return updatedUser;
 	}
 
-	async delete(id: string): Promise<void> {
-		await prisma.users.delete({
-			where: {
-				id,
-			},
-		});
+	async delete(user_id: string): Promise<void> {
+		await this.usersRepository.delete(user_id);
 	}
 
 	async gettAllUsers(): Promise<Partial<Users>[]> {
-		const users = await prisma.users.findMany({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				created_at: true,
-				updated_at: true,
-			},
-		});
+		const users = await this.usersRepository.gettAllUsers();
 
 		return users;
 	}
 
-	async findById(id: string): Promise<IFindUniqueUser> {
-		const user = await prisma.users.findUniqueOrThrow({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				bio: true,
-				created_at: true,
-				updated_at: true,
-				rolesUsers: {
-					select: {
-						roles: {
-							select: {
-								key: true,
-							},
-						},
-					},
-				},
-				permissionsUsers: {
-					select: {
-						permission: {
-							select: {
-								key: true,
-							},
-						},
-					},
-				},
-			},
-			where: {
-				id,
-			},
-		});
+	async findById(user_id: string): Promise<IUserResponse> {
+		const user = (await this.usersRepository.findById(user_id)) as IUserDTO;
 
-		const { permissionsUsers, rolesUsers, ...rest } = user;
-		const userResponse: IFindUniqueUser = rest;
+		let permission: string | undefined;
+		let roles: string[] | undefined;
 
-		return userResponse;
+		if (user && user.permissionsUsers) {
+			permission = user.permissionsUsers.permission.key;
+		}
+
+		if (user && user.rolesUsers?.length > 0) {
+			roles = user.rolesUsers.map((role) => {
+				return role.roles.key;
+			});
+		}
+
+		return {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			phone_number: user.phone_number,
+			cpf: user.cpf,
+			company: user.company,
+			bio: user.bio,
+			created_at: user.created_at,
+			updated_at: user.updated_at,
+			permission,
+			roles,
+		};
 	}
 
 	async findByCpf(cpf: string): Promise<Partial<Users>> {
-		const user = await prisma.users.findUniqueOrThrow({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				created_at: true,
-				updated_at: true,
-			},
-			where: {
-				cpf,
-			},
-		});
+		const user = await this.usersRepository.findByCpf(cpf);
 
-		return user;
+		return {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			phone_number: user.phone_number,
+			cpf: user.cpf,
+			company: user.company,
+			bio: user.bio,
+			created_at: user.created_at,
+			updated_at: user.updated_at,
+		};
+	}
+
+	async findByEmail(email: string): Promise<Partial<Users>> {
+		const user = await this.usersRepository.findByEmail(email);
+
+		return {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			phone_number: user.phone_number,
+			cpf: user.cpf,
+			company: user.company,
+			bio: user.bio,
+			created_at: user.created_at,
+			updated_at: user.updated_at,
+		};
 	}
 }

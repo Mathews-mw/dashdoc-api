@@ -29,27 +29,36 @@ export class InMemoryUsersRepository implements IUserRepository {
 		return newUser;
 	}
 
-	async update(data: IUpdateUserDTO): Promise<Users> {
-		throw new Error('Method not implemented.');
+	async update(user_id: string, data: IUpdateUserDTO): Promise<Users> {
+		const findUserIndex = this.users.findIndex((user) => user.id === user_id);
+
+		const user = { ...this.users[findUserIndex], ...data };
+
+		this.users[findUserIndex].updated_at = new Date();
+		this.users[findUserIndex] = user;
+
+		return user;
 	}
 
-	async delete(id: string): Promise<void> {
-		throw new Error('Method not implemented.');
+	async delete(user_id: string): Promise<void> {
+		const findUserIndex = this.users.findIndex((user) => user.id === user_id);
+
+		this.users.splice(findUserIndex, 1);
 	}
 
 	async gettAllUsers(): Promise<Partial<Users>[]> {
-		throw new Error('Method not implemented.');
+		return this.users;
 	}
 
-	async findById(id: string): Promise<Partial<Users>> {
-		return this.users.find((user) => user.id === id) as Users;
+	async findById(user_id: string): Promise<Users> {
+		return this.users.find((user) => user.id === user_id) as Users;
 	}
 
-	async findByEmail(email: string): Promise<Partial<Users>> {
+	async findByEmail(email: string): Promise<Users> {
 		return this.users.find((user) => user.email === email) as Users;
 	}
 
-	async findByCpf(cpf: string): Promise<Partial<Users>> {
+	async findByCpf(cpf: string): Promise<Users> {
 		return this.users.find((user) => user.cpf === cpf) as Users;
 	}
 }

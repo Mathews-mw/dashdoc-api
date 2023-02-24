@@ -20,13 +20,13 @@ export class UsersRepository implements IUserRepository {
 		return newUser;
 	}
 
-	async update(data: IUpdateUserDTO): Promise<Users> {
-		const { id, name, email, phone_number, cpf, bio, company } = data;
+	async update(user_id: string, data: IUpdateUserDTO): Promise<Users> {
+		const { name, email, phone_number, cpf, bio, company } = data;
 
 		const updateUser = await prisma.users
 			.update({
 				where: {
-					id,
+					id: user_id,
 				},
 				data: {
 					name,
@@ -45,10 +45,10 @@ export class UsersRepository implements IUserRepository {
 		return updateUser;
 	}
 
-	async delete(id: string): Promise<void> {
+	async delete(user_id: string): Promise<void> {
 		await prisma.users.delete({
 			where: {
-				id,
+				id: user_id,
 			},
 		});
 	}
@@ -70,18 +70,18 @@ export class UsersRepository implements IUserRepository {
 		return users;
 	}
 
-	async findById(id: string): Promise<Partial<Users>> {
+	async findById(user_id: string): Promise<Users> {
 		const user = await prisma.users.findUniqueOrThrow({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				bio: true,
-				created_at: true,
-				updated_at: true,
+			include: {
+				permissionsUsers: {
+					select: {
+						permission: {
+							select: {
+								key: true,
+							},
+						},
+					},
+				},
 				rolesUsers: {
 					select: {
 						roles: {
@@ -91,32 +91,17 @@ export class UsersRepository implements IUserRepository {
 						},
 					},
 				},
-				permissionsUsers: {
-					select: {
-						permission: true,
-					},
-				},
 			},
 			where: {
-				id,
+				id: user_id,
 			},
 		});
 
 		return user;
 	}
 
-	async findByEmail(email: string): Promise<Partial<Users>> {
+	async findByEmail(email: string): Promise<Users> {
 		const user = await prisma.users.findUniqueOrThrow({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				created_at: true,
-				updated_at: true,
-			},
 			where: {
 				email,
 			},
@@ -125,18 +110,8 @@ export class UsersRepository implements IUserRepository {
 		return user;
 	}
 
-	async findByCpf(cpf: string): Promise<Partial<Users>> {
+	async findByCpf(cpf: string): Promise<Users> {
 		const user = await prisma.users.findUniqueOrThrow({
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				phone_number: true,
-				cpf: true,
-				company: true,
-				created_at: true,
-				updated_at: true,
-			},
 			where: {
 				cpf,
 			},

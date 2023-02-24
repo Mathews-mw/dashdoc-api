@@ -8,21 +8,21 @@ export interface ICreateUserDTO {
 }
 
 export interface IUpdateUserDTO {
-	id: string;
 	name?: string;
 	email?: string;
 	phone_number?: string;
 	cpf?: string;
 	bio?: string;
 	company?: string;
+	updated_at: Date;
 }
 
 export interface IUserRepository {
 	create(data: ICreateUserDTO): Promise<Users>;
-	update(data: IUpdateUserDTO): Promise<Users>;
-	delete(id: string): Promise<void>;
+	update(user_id: string, data: IUpdateUserDTO): Promise<Users>;
+	delete(user_id: string): Promise<void>;
 	gettAllUsers(): Promise<Partial<Users>[]>;
-	findById(id: string): Promise<Partial<Users>>;
-	findByEmail(email: string): Promise<Partial<Users>>;
-	findByCpf(cpf: string): Promise<Partial<Users>>;
+	findById(user_id: string): Promise<Users>;
+	findByEmail(email: string): Promise<Users>;
+	findByCpf(cpf: string): Promise<Users>;
 }
